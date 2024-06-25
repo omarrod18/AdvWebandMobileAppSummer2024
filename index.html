@@ -34,7 +34,7 @@
     </center>
     <script> 
         $(document).ready(function () { 
-            $.getJSON("google-books-search", function (data) { 
+            $.getJSON("https://www.googleapis.com/books/v1/volumes?q=modern%20web", function (data) { 
                 var book = ''; 
                 $.each(data, function (key, value) { 
                     book += '<tr>'; 
