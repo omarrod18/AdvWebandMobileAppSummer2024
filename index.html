@@ -5,6 +5,12 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <title>IT 4403 Individual Project: Milestone #1</title>
+    <style>
+        td img {
+            display: block;
+            margin: auto;
+        }
+    </style>
 </head>
 <body>
     <center>
@@ -42,14 +48,15 @@
                 $.each(data.items, function (key, value) { 
                     var authors = value.volumeInfo.authors ? value.volumeInfo.authors.join(", ") : "N/A";
                     var title = value.volumeInfo.title ? value.volumeInfo.title : "N/A";
-                    var description = value.volumeInfo.description ? value.volumeInfo.description : "N/A";
+                    var description = value.volumeInfo.description ? value.volumeInfo.description.substring(0, 100) + '...' : "N/A";
                     var thumbnail = value.volumeInfo.imageLinks && value.volumeInfo.imageLinks.thumbnail ? value.volumeInfo.imageLinks.thumbnail : "https://via.placeholder.com/128x195?text=No+Image";
+                    var infoLink = value.volumeInfo.infoLink ? value.volumeInfo.infoLink : "#";
 
                     book += '<tr>'; 
                     book += '<td><img src="' + thumbnail + '" alt="Book cover" width="128" height="195"></td>'; 
                     book += '<td>' + authors + '</td>'; 
                     book += '<td>' + title + '</td>'; 
-                    book += '<td>' + description + '</td>'; 
+                    book += '<td>' + description + ' <a href="' + infoLink + '" target="_blank">See more</a></td>'; 
                     book += '</tr>'; 
                 }); 
                 $('#table tbody').append(book); 
@@ -60,3 +67,4 @@
     </script> 
 </body>
 </html>
+
