@@ -1,56 +1,51 @@
+<!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <link rel=”stylesheet.css” href=”https://stackpath.bootstrapcdn.com/
-            bootstrap/4.4.1/css/bootstrap.min.css” integrity=”sha384-Vkoo8x4CGsO3+Hhxv8T/
-            Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh” crossorigin=”anonymous”>
-            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <title>IT 4403 Individual Project: Milestone #1</title>
-    </head>
-    <body>
-        <center>
-         <h1>IT 4403 Individual Project</h1>
-            <h2>Omar Rodriguez <br/> 
-                College of Computing and Software Engineering <br/>
-                This web page uses JavaScript/jQuery to read data and display it nicely. This is Project Milestone 1.
-            </h2>
-           <h3>IT 4403: Advanced Web and Mobile App <br/>
-                <a href="https://www.kennesaw.edu/ccse/academics/information-technology/">Department of Information Technology</a>
-            </h3>
-         <h3>Project Information: <br/>
-              Milestone 1: JSON<br/>
-              Milestone 2: Google Books API <br/>
-              Milestone 3: Book Search AJAX <br/>
-             Milestone 4: Improved SPA UI
-         </h3>
-         <table>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <title>IT 4403 Individual Project: Milestone #1</title>
+</head>
+<body>
+    <center>
+        <h1>IT 4403 Individual Project</h1>
+        <h2>Omar Rodriguez <br/> 
+            College of Computing and Software Engineering <br/>
+            This web page uses JavaScript/jQuery to read data and display it nicely. This is Project Milestone 1.
+        </h2>
+        <h3>IT 4403: Advanced Web and Mobile App <br/>
+            <a href="https://www.kennesaw.edu/ccse/academics/information-technology/">Department of Information Technology</a>
+        </h3>
+        <h3>Project Information: <br/>
+            Milestone 1: JSON<br/>
+            Milestone 2: Google Books API <br/>
+            Milestone 3: Book Search AJAX <br/>
+            Milestone 4: Improved SPA UI
+        </h3>
+        <table id="table">
             <thead>
                 <tr>
-                    <th> Book Author</th>
-                    <th> Book Title</th>
+                    <th>Book Author</th>
+                    <th>Book Title</th>
                     <th>Book Description</th>
                 </tr>
             </thead>
-            <script> 
-                $(document).ready(function () { 
-                    $.getJSON("google-books-search",  
-                            function (data) { 
-                        var book = ''; 
-                        $.each(data, function (key, value) { 
-                            book += '<tr>'; 
-                            book += '<td>' +  
-                                value.authors + '</td>'; 
-                            book += '<td>' +  
-                                value.title + '</td>'; 
-                            book += '<td>' +  
-                                value.description + '</td>'; 
-                            book += '</tr>'; 
-                        }); 
-                        $('#table').append(book); 
-                    }); 
+        </table>
+    </center>
+    <script> 
+        $(document).ready(function () { 
+            $.getJSON("google-books-search", function (data) { 
+                var book = ''; 
+                $.each(data, function (key, value) { 
+                    book += '<tr>'; 
+                    book += '<td>' + value.authors + '</td>'; 
+                    book += '<td>' + value.title + '</td>'; 
+                    book += '<td>' + value.description + '</td>'; 
+                    book += '</tr>'; 
                 }); 
-            </script> 
-         </table>
-        </center>
-    </body>
+                $('#table').append(book); 
+            }); 
+        }); 
+    </script> 
+</body>
 </html>
