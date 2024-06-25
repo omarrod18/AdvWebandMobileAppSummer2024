@@ -34,6 +34,9 @@
                     <th>Book Cover</th>
                     <th>Book Author</th>
                     <th>Book Title</th>
+                    <th>Book Subtitle</th>
+                    <th>Book Publisher</th>
+                    <th>Published Date</th>
                     <th>Book Description</th>
                 </tr>
             </thead>
@@ -48,6 +51,9 @@
                 $.each(data.items, function (key, value) { 
                     var authors = value.volumeInfo.authors ? value.volumeInfo.authors.join(", ") : "N/A";
                     var title = value.volumeInfo.title ? value.volumeInfo.title : "N/A";
+                    var subtitle = value.volumeInfo.subtitle ? value.volumeInfo.subtitle : "N/A";
+                    var publisher = value.volumeInfo.publisher ? value.volumeInfo.publisher : "N/A";
+                    var publishedDate = value.volumeInfo.publishedDate ? value.volumeInfo.publishedDate : "N/A";
                     var description = value.volumeInfo.description ? value.volumeInfo.description.substring(0, 100) + '...' : "N/A";
                     var thumbnail = value.volumeInfo.imageLinks && value.volumeInfo.imageLinks.thumbnail ? value.volumeInfo.imageLinks.thumbnail : "https://via.placeholder.com/128x195?text=No+Image";
                     var infoLink = value.volumeInfo.infoLink ? value.volumeInfo.infoLink : "#";
@@ -56,6 +62,9 @@
                     book += '<td><img src="' + thumbnail + '" alt="Book cover" width="128" height="195"></td>'; 
                     book += '<td>' + authors + '</td>'; 
                     book += '<td>' + title + '</td>'; 
+                    book += '<td>' + subtitle + '</td>'; 
+                    book += '<td>' + publisher + '</td>'; 
+                    book += '<td>' + publishedDate + '</td>'; 
                     book += '<td>' + description + ' <a href="' + infoLink + '" target="_blank">See more</a></td>'; 
                     book += '</tr>'; 
                 }); 
@@ -67,4 +76,5 @@
     </script> 
 </body>
 </html>
+
 
