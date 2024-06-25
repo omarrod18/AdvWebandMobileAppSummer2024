@@ -3,7 +3,7 @@ fetch("google-books-search.json")
     return response.json();
 })
 .then(function(books){
-    let placeholder = document.querySelector("data-output");
+    let placeholder = document.querySelector("#data-output");
     let out = " ";
     for (let book of books){
         out += 
