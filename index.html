@@ -35,15 +35,15 @@
     <script> 
         $(document).ready(function () { 
             $.getJSON("https://www.googleapis.com/books/v1/volumes?q=modern%20web", function (data) { 
-                var book = ''; 
+                var data = ''; 
                 $.each(data, function (key, value) { 
-                    book += '<tr>'; 
-                    book += '<td>' + value.authors + '</td>'; 
-                    book += '<td>' + value.title + '</td>'; 
-                    book += '<td>' + value.description + '</td>'; 
-                    book += '</tr>'; 
+                    data += '<tr>'; 
+                    data += '<td>' + value.authors + '</td>'; 
+                    data += '<td>' + value.title + '</td>'; 
+                    data += '<td>' + value.description + '</td>'; 
+                    data += '</tr>'; 
                 }); 
-                $('#table').append(book); 
+                $('#table').append(data); 
             }); 
         }); 
     </script> 
