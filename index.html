@@ -25,6 +25,7 @@
         <table id="table" class="table table-bordered">
             <thead>
                 <tr>
+                    <th>Book Cover</th>
                     <th>Book Author</th>
                     <th>Book Title</th>
                     <th>Book Description</th>
@@ -42,8 +43,10 @@
                     var authors = value.volumeInfo.authors ? value.volumeInfo.authors.join(", ") : "N/A";
                     var title = value.volumeInfo.title ? value.volumeInfo.title : "N/A";
                     var description = value.volumeInfo.description ? value.volumeInfo.description : "N/A";
+                    var thumbnail = value.volumeInfo.imageLinks && value.volumeInfo.imageLinks.thumbnail ? value.volumeInfo.imageLinks.thumbnail : "https://via.placeholder.com/128x195?text=No+Image";
 
                     book += '<tr>'; 
+                    book += '<td><img src="' + thumbnail + '" alt="Book cover" width="128" height="195"></td>'; 
                     book += '<td>' + authors + '</td>'; 
                     book += '<td>' + title + '</td>'; 
                     book += '<td>' + description + '</td>'; 
