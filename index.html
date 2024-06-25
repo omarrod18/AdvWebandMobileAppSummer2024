@@ -22,7 +22,7 @@
             Milestone 3: Book Search AJAX <br/>
             Milestone 4: Improved SPA UI
         </h3>
-        <table id="table">
+        <table id="table" class="table table-bordered">
             <thead>
                 <tr>
                     <th>Book Author</th>
@@ -30,21 +30,29 @@
                     <th>Book Description</th>
                 </tr>
             </thead>
+            <tbody>
+            </tbody>
         </table>
     </center>
     <script> 
         $(document).ready(function () { 
             $.getJSON("https://www.googleapis.com/books/v1/volumes?q=modern%20web", function (data) { 
-                var data = ''; 
-                $.each(data, function (key, value) { 
-                    data += '<tr>'; 
-                    data += '<td>' + value.authors + '</td>'; 
-                    data += '<td>' + value.title + '</td>'; 
-                    data += '<td>' + value.description + '</td>'; 
-                    data += '</tr>'; 
+                var book = ''; 
+                $.each(data.items, function (key, value) { 
+                    var authors = value.volumeInfo.authors ? value.volumeInfo.authors.join(", ") : "N/A";
+                    var title = value.volumeInfo.title ? value.volumeInfo.title : "N/A";
+                    var description = value.volumeInfo.description ? value.volumeInfo.description : "N/A";
+
+                    book += '<tr>'; 
+                    book += '<td>' + authors + '</td>'; 
+                    book += '<td>' + title + '</td>'; 
+                    book += '<td>' + description + '</td>'; 
+                    book += '</tr>'; 
                 }); 
-                $('#table').append(data); 
-            }); 
+                $('#table tbody').append(book); 
+            }).fail(function() {
+                console.error("An error occurred while fetching the JSON data.");
+            });
         }); 
     </script> 
 </body>
