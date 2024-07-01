@@ -2,31 +2,89 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>My Bookshelf - IT 4403</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <title>My Bookshelf - IT 4403 Individual Project Milestone 2</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            padding: 20px;
+        }
+        h1 {
+            color: #007bff;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            color: #0056b3;
+        }
+        .book-item {
+            background-color: #ffffff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .book-item img {
+            max-width: 150px;
+            margin-bottom: 10px;
+        }
+        .floating-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .floating-box a {
+            margin: 5px;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        .floating-box a:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
+    <div class="container">
         <h1>My Bookshelf</h1>
-        <div id="bookshelf"></div>
+        <div id="bookshelf" class="row"></div>
     </div>
-
+    <div class="floating-box">
+        <a href="index.html">Home</a>
+        <a href="book.html">Book Details</a>
+    </div>
     <script>
         $(document).ready(function () {
             var url = 'https://www.googleapis.com/books/v1/users/109624874409377096237/bookshelves/1001/volumes';
 
             $.getJSON(url, function (data) {
-                var output = '<div class="row">';
+                var output = '';
                 $.each(data.items, function (index, book) {
                     var title = book.volumeInfo.title || 'No Title';
-                    var thumbnail = book.volumeInfo.imageLinks ? book.volumeInfo.imageLinks.thumbnail : 'https://via.placeholder.com/128x195?text=No+Image';
+                    var thumbnail = book.volumeInfo.imageLinks ? book.volumeInfo.imageLinks.thumbnail : 'https://via.placeholder.com/150x200?text=No+Image';
                     output += '<div class="col-md-4">';
+                    output += '<div class="book-item">';
+                    output += '<img src="' + thumbnail + '" alt="Book cover">';
                     output += '<h5><a href="book.html?id=' + book.id + '">' + title + '</a></h5>';
-                    output += '<img src="' + thumbnail + '" class="img-thumbnail">';
+                    output += '</div>';
                     output += '</div>';
                 });
-                output += '</div>';
                 $('#bookshelf').html(output);
             }).fail(function () {
                 $('#bookshelf').html('<p>An error occurred while fetching the data.</p>');

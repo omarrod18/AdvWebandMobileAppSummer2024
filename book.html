@@ -2,35 +2,104 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Book Details - IT 4403 Project Milestone 2</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <title>Book Details - IT 4403</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            color: #007bff;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            color: #0056b3;
+        }
+        .book-details {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .book-cover {
+            max-width: 200px;
+            margin: 0 auto 20px;
+        }
+        .floating-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .floating-box a {
+            margin: 5px;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        .floating-box a:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1>Book Details</h1>
-        <div id="bookDetails"></div>
+    <div class="container">
+        <h1>Book Details - IT 4403 Individual Project Milestone 2 </h1>
+        <div id="book-details" class="book-details">
+            <img id="book-cover" class="book-cover" src="" alt="Book Cover">
+            <h2 id="book-title"></h2>
+            <h4 id="book-authors"></h4>
+            <p id="book-publisher"></p>
+            <p id="book-publishedDate"></p>
+            <p id="book-description"></p>
+            <p id="book-pageCount"></p>
+            <p id="book-categories"></p>
+            <p id="book-averageRating"></p>
+            <p id="book-infoLink"></p>
+        </div>
     </div>
-
+    <div class="floating-box">
+        <a href="index.html">Home</a>
+        <a href="bookshelf.html">My Bookshelf</a>
+    </div>
     <script>
         $(document).ready(function () {
-            var urlParams = new URLSearchParams(window.location.search);
-            var bookId = urlParams.get('id');
-            var url = 'https://www.googleapis.com/books/v1/volumes/' + bookId;
+            const urlParams = new URLSearchParams(window.location.search);
+            const bookId = urlParams.get('id');
+            const apiUrl = 'https://www.googleapis.com/books/v1/volumes/' + bookId;
 
-            $.getJSON(url, function (data) {
-                var book = data.volumeInfo;
-                var output = '<h2>' + book.title + '</h2>';
-                output += '<h4>by ' + (book.authors ? book.authors.join(', ') : 'Unknown Author') + '</h4>';
-                output += '<img src="' + (book.imageLinks ? book.imageLinks.thumbnail : 'https://via.placeholder.com/128x195?text=No+Image') + '" class="img-thumbnail">';
-                output += '<p>' + (book.description || 'No description available') + '</p>';
-                output += '<p><strong>Publisher:</strong> ' + (book.publisher || 'N/A') + '</p>';
-                output += '<p><strong>Published Date:</strong> ' + (book.publishedDate || 'N/A') + '</p>';
-                $('#bookDetails').html(output);
+            $.getJSON(apiUrl, function (data) {
+                $('#book-cover').attr('src', data.volumeInfo.imageLinks ? data.volumeInfo.imageLinks.thumbnail : 'https://via.placeholder.com/200x300?text=No+Image');
+                $('#book-title').text(data.volumeInfo.title || 'No Title');
+                $('#book-authors').text('Authors: ' + (data.volumeInfo.authors ? data.volumeInfo.authors.join(", ") : 'N/A'));
+                $('#book-publisher').text('Publisher: ' + (data.volumeInfo.publisher || 'N/A'));
+                $('#book-publishedDate').text('Published Date: ' + (data.volumeInfo.publishedDate || 'N/A'));
+                $('#book-description').text('Description: ' + (data.volumeInfo.description || 'N/A'));
+                $('#book-pageCount').text('Page Count: ' + (data.volumeInfo.pageCount || 'N/A'));
+                $('#book-categories').text('Categories: ' + (data.volumeInfo.categories ? data.volumeInfo.categories.join(", ") : 'N/A'));
+                $('#book-averageRating').text('Average Rating: ' + (data.volumeInfo.averageRating || 'N/A'));
+                $('#book-infoLink').html('<a href="' + data.volumeInfo.infoLink + '" target="_blank">More Info</a>');
             }).fail(function () {
-                $('#bookDetails').html('<p>An error occurred while fetching the data.</p>');
+                $('#book-details').html('<p>An error occurred while fetching the book details.</p>');
             });
         });
     </script>
 </body>
 </html>
+

@@ -6,6 +6,33 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <title>IT 4403 Individual Project: Milestone #1</title>
     <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+            margin: 0;
+            padding: 0;
+        }
+        h1, h2, h3 {
+            color: #007bff;
+        }
+        center {
+            padding: 20px;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            color: #0056b3;
+        }
+        table {
+            background-color: #ffffff;
+        }
+        table thead th {
+            background-color: #007bff;
+            color: white;
+        }
         td img {
             display: block;
             margin: auto;
@@ -25,6 +52,7 @@
             text-align: center;
             border-radius: 5px;
             text-decoration: none;
+            transition: background-color 0.3s;
         }
         .floating-box a:hover {
             background-color: #0056b3;
@@ -47,7 +75,7 @@
             Milestone 3: Book Search AJAX <br/>
             Milestone 4: Improved SPA UI
         </h3>
-        <table id="table" class="table table-bordered">
+        <table id="table" class="table table-bordered table-hover">
             <thead>
                 <tr>
                     <th>Book Cover</th>
@@ -99,6 +127,7 @@
     </script> 
 </body>
 </html>
+
 
 
 
