@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>My Bookshelf - IT 4403</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>My Bookshelf</h1>
+        <div id="bookshelf"></div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            var url = 'https://www.googleapis.com/books/v1/users/109624874409377096237/bookshelves/1001/volumes';
+
+            $.getJSON(url, function (data) {
+                var output = '<div class="row">';
+                $.each(data.items, function (index, book) {
+                    var title = book.volumeInfo.title || 'No Title';
+                    var thumbnail = book.volumeInfo.imageLinks ? book.volumeInfo.imageLinks.thumbnail : 'https://via.placeholder.com/128x195?text=No+Image';
+                    output += '<div class="col-md-4">';
+                    output += '<h5><a href="book.html?id=' + book.id + '">' + title + '</a></h5>';
+                    output += '<img src="' + thumbnail + '" class="img-thumbnail">';
+                    output += '</div>';
+                });
+                output += '</div>';
+                $('#bookshelf').html(output);
+            }).fail(function () {
+                $('#bookshelf').html('<p>An error occurred while fetching the data.</p>');
+            });
+        });
+    </script>
+</body>
+</html>

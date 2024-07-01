@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Book Details - IT 4403 Project Milestone 2</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Book Details</h1>
+        <div id="bookDetails"></div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            var urlParams = new URLSearchParams(window.location.search);
+            var bookId = urlParams.get('id');
+            var url = 'https://www.googleapis.com/books/v1/volumes/' + bookId;
+
+            $.getJSON(url, function (data) {
+                var book = data.volumeInfo;
+                var output = '<h2>' + book.title + '</h2>';
+                output += '<h4>by ' + (book.authors ? book.authors.join(', ') : 'Unknown Author') + '</h4>';
+                output += '<img src="' + (book.imageLinks ? book.imageLinks.thumbnail : 'https://via.placeholder.com/128x195?text=No+Image') + '" class="img-thumbnail">';
+                output += '<p>' + (book.description || 'No description available') + '</p>';
+                output += '<p><strong>Publisher:</strong> ' + (book.publisher || 'N/A') + '</p>';
+                output += '<p><strong>Published Date:</strong> ' + (book.publishedDate || 'N/A') + '</p>';
+                $('#bookDetails').html(output);
+            }).fail(function () {
+                $('#bookDetails').html('<p>An error occurred while fetching the data.</p>');
+            });
+        });
+    </script>
+</body>
+</html>
