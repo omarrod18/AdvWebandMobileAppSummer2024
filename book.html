@@ -66,7 +66,79 @@
         <h1>Book Details - IT 4403 Individual Project Milestone 2</h1>
         <div class="search-bar">
             <input type="text" id="search-input" class="form-control" placeholder="Search for a book">
-            <button id="search-button" class
+            <button id="search-button" class="btn btn-primary mt-2">Search</button>
+        </div>
+        <div id="book-details" class="book-details">
+            <img id="book-cover" class="book-cover" src="" alt="Book Cover">
+            <h2 id="book-title"></h2>
+            <h4 id="book-authors"></h4>
+            <p id="book-publisher"></p>
+            <p id="book-publishedDate"></p>
+            <p id="book-description"></p>
+            <p id="book-pageCount"></p>
+            <p id="book-categories"></p>
+            <p id="book-averageRating"></p>
+            <p id="book-infoLink"></p>
+        </div>
+    </div>
+    <div class="floating-box">
+        <a href="index.html">Home</a>
+        <a href="bookshelf.html">My Bookshelf</a>
+    </div>
+    <script>
+        const apiKey = 'AIzaSyDJBWE0Ji-2QCq6W1Agt8XwK7vKAukP4II';
+
+        $(document).ready(function () {
+            $('#search-button').click(function () {
+                const query = $('#search-input').val();
+                if (query) {
+                    searchBook(query);
+                }
+            });
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const bookId = urlParams.get('id');
+            if (bookId) {
+                fetchBookDetails(bookId);
+            }
+        });
+
+        function searchBook(query) {
+            $.getJSON(`https://www.googleapis.com/books/v1/volumes?q=${query}&key=${apiKey}`, function (data) {
+                if (data.items && data.items.length > 0) {
+                    displayBookDetails(data.items[0].volumeInfo);
+                } else {
+                    $('#book-details').html('<p>No books found.</p>');
+                }
+            }).fail(function () {
+                $('#book-details').html('<p>An error occurred while searching for the book.</p>');
+            });
+        }
+
+        function fetchBookDetails(bookId) {
+            $.getJSON(`https://www.googleapis.com/books/v1/volumes/${bookId}?key=${apiKey}`, function (data) {
+                displayBookDetails(data.volumeInfo);
+            }).fail(function () {
+                $('#book-details').html('<p>An error occurred while fetching the book details.</p>');
+            });
+        }
+
+        function displayBookDetails(book) {
+            $('#book-cover').attr('src', book.imageLinks ? book.imageLinks.thumbnail : 'https://via.placeholder.com/200x300?text=No+Image');
+            $('#book-title').text(book.title || 'No Title');
+            $('#book-authors').text('Authors: ' + (book.authors ? book.authors.join(", ") : 'N/A'));
+            $('#book-publisher').text('Publisher: ' + (book.publisher || 'N/A'));
+            $('#book-publishedDate').text('Published Date: ' + (book.publishedDate || 'N/A'));
+            $('#book-description').text('Description: ' + (book.description || 'N/A'));
+            $('#book-pageCount').text('Page Count: ' + (book.pageCount || 'N/A'));
+            $('#book-categories').text('Categories: ' + (book.categories ? book.categories.join(", ") : 'N/A'));
+            $('#book-averageRating').text('Average Rating: ' + (book.averageRating || 'N/A'));
+            $('#book-infoLink').html('<a href="' + book.infoLink + '" target="_blank">More Info</a>');
+        }
+    </script>
+</body>
+</html>
+
 
 
 
