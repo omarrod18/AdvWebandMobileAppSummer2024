@@ -1,161 +1,146 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <title>My Book App - IT 4403</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Books Search</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f8f9fa;
-            color: #343a40;
+            font-family: Arial, sans-serif;
             margin: 0;
-            padding: 0;
-        }
-        .container {
             padding: 20px;
+            background-color: #f4f4f4;
         }
-        h1, h2, h3 {
-            color: #007bff;
+        #search-container {
+            margin-bottom: 20px;
         }
-        a {
-            color: #007bff;
-            text-decoration: none;
-        }
-        a:hover {
-            color: #0056b3;
-        }
-        .floating-search-bar {
-            position: fixed;
-            top: 20px;
-            right: 20px;
+        #search-results {
             display: flex;
-            flex-direction: column;
-            background-color: #ffffff;
+            flex-wrap: wrap;
+        }
+        .book-item {
+            margin: 10px;
             padding: 10px;
+            border: 1px solid #ccc;
             border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 200px;
+            text-align: center;
+            background-color: #fff;
         }
-        .floating-search-bar input {
-            margin-bottom: 10px;
+        .book-item img {
+            max-width: 100%;
+            height: auto;
         }
-        .floating-search-bar button {
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .pagination button {
+            margin: 0 5px;
+            padding: 10px 15px;
             background-color: #007bff;
-            color: white;
+            color: #fff;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            padding: 5px 10px;
         }
-        .floating-search-bar button:hover {
+        .pagination button.active {
             background-color: #0056b3;
         }
-        .book-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
+        #book-details {
             margin-top: 20px;
-        }
-        .book-item {
-            background-color: #ffffff;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
-            text-align: center;
-            width: 150px;
-        }
-        .book-item img {
-            max-width: 100px;
-            margin: 0 auto 10px;
-        }
-        .book-details {
-            margin-top: 20px;
-            background-color: #ffffff;
             padding: 20px;
+            border: 1px solid #ccc;
             border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Welcome to My Book App</h1>
-        <div id="book-details" class="book-details"></div>
-        <div id="search-results" class="book-list"></div>
+    <div id="search-container">
+        <input type="text" id="search-term" placeholder="Search for books...">
+        <button id="search-button">Search</button>
     </div>
-    <div class="floating-search-bar">
-        <input type="text" id="floating-search-input" class="form-control" placeholder="Search for a book">
-        <button id="floating-search-button">Search</button>
-    </div>
+
+    <div id="search-results"></div>
+    <div class="pagination"></div>
+
+    <div id="book-details" style="display:none;"></div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
+        const apiKey = 'YOUR_GOOGLE_BOOKS_API_KEY';
+        let currentPage = 1;
+        let totalPages = 0;
+        let searchTerm = '';
+
         $(document).ready(function () {
-            const itemsPerPage = 10;
-            let searchQuery = '';
-
-            const displayBookDetails = (book) => {
-                $('#book-details').html(`
-                    <img src="${book.imageLinks ? book.imageLinks.thumbnail : 'https://via.placeholder.com/200x300?text=No+Image'}" alt="Book Cover">
-                    <h2>${book.title || 'No Title'}</h2>
-                    <h4>Authors: ${book.authors ? book.authors.join(", ") : 'N/A'}</h4>
-                    <p>Publisher: ${book.publisher || 'N/A'}</p>
-                    <p>Published Date: ${book.publishedDate || 'N/A'}</p>
-                    <p>Description: ${book.description || 'N/A'}</p>
-                    <p>Page Count: ${book.pageCount || 'N/A'}</p>
-                    <p>Categories: ${book.categories ? book.categories.join(", ") : 'N/A'}</p>
-                    <p>Average Rating: ${book.averageRating || 'N/A'}</p>
-                    <p><a href="${book.infoLink}" target="_blank">More Info</a></p>
-                `);
-            };
-
-            const displaySearchResults = (books) => {
-                $('#search-results').empty();
-                books.forEach(book => {
-                    const bookInfo = book.volumeInfo;
-                    $('#search-results').append(`
-                        <div class="book-item" data-id="${book.id}">
-                            <img src="${bookInfo.imageLinks ? bookInfo.imageLinks.thumbnail : 'https://via.placeholder.com/100x150?text=No+Image'}" alt="Book Cover">
-                            <p>${bookInfo.title || 'No Title'}</p>
-                        </div>
-                    `);
-                });
-
-                $('.book-item').click(function () {
-                    const bookId = $(this).data('id');
-                    fetchBookDetails(bookId);
-                });
-            };
-
-            const fetchSearchResults = (query) => {
-                const apiUrl = `https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=${itemsPerPage}`;
-                $.getJSON(apiUrl, function (data) {
-                    searchQuery = query;
-                    displaySearchResults(data.items);
-                }).fail(function () {
-                    $('#search-results').html('<p>An error occurred while fetching the search results.</p>');
-                });
-            };
-
-            const fetchBookDetails = (bookId) => {
-                const apiUrl = 'https://www.googleapis.com/books/v1/volumes/' + bookId;
-                $.getJSON(apiUrl, function (data) {
-                    displayBookDetails(data.volumeInfo);
-                }).fail(function () {
-                    $('#book-details').html('<p>An error occurred while fetching the book details.</p>');
-                });
-            };
-
-            $('#floating-search-button').click(function () {
-                const query = $('#floating-search-input').val();
-                if (query) {
-                    fetchSearchResults(query);
-                }
+            $('#search-button').click(function () {
+                searchTerm = $('#search-term').val();
+                currentPage = 1;
+                searchBooks();
             });
         });
+
+        function searchBooks() {
+            $.ajax({
+                url: `https://www.googleapis.com/books/v1/volumes?q=${searchTerm}&startIndex=${(currentPage - 1) * 10}&maxResults=10&key=${apiKey}`,
+                type: 'GET',
+                success: function (data) {
+                    displayResults(data);
+                }
+            });
+        }
+
+        function displayResults(data) {
+            $('#search-results').empty();
+            data.items.forEach(item => {
+                const bookItem = `<div class="book-item" data-id="${item.id}">
+                                    <img src="${item.volumeInfo.imageLinks?.thumbnail}" alt="${item.volumeInfo.title}">
+                                    <h4>${item.volumeInfo.title}</h4>
+                                  </div>`;
+                $('#search-results').append(bookItem);
+            });
+
+            totalPages = Math.ceil(data.totalItems / 10);
+            updatePagination();
+
+            $('.book-item').click(function () {
+                const bookId = $(this).data('id');
+                displayBookDetails(bookId);
+            });
+        }
+
+        function updatePagination() {
+            $('.pagination').empty();
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = `<button class="${i === currentPage ? 'active' : ''}" onclick="gotoPage(${i})">${i}</button>`;
+                $('.pagination').append(pageButton);
+            }
+        }
+
+        function gotoPage(page) {
+            currentPage = page;
+            searchBooks();
+        }
+
+        function displayBookDetails(bookId) {
+            $.ajax({
+                url: `https://www.googleapis.com/books/v1/volumes/${bookId}?key=${apiKey}`,
+                type: 'GET',
+                success: function (data) {
+                    $('#book-details').show().html(`<h2>${data.volumeInfo.title}</h2>
+                                                    <p>${data.volumeInfo.description}</p>
+                                                    <img src="${data.volumeInfo.imageLinks?.thumbnail}" alt="${data.volumeInfo.title}">
+                                                    <p>Author: ${data.volumeInfo.authors?.join(', ')}</p>
+                                                    <p>Published Date: ${data.volumeInfo.publishedDate}</p>`);
+                }
+            });
+        }
     </script>
 </body>
 </html>
+
 
 
 
