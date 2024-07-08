@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <title>IT 4403 Individual Project: Milestone #1</title>
+    <title>My Book App - IT 4403</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -13,11 +13,11 @@
             margin: 0;
             padding: 0;
         }
+        .container {
+            padding: 20px;
+        }
         h1, h2, h3 {
             color: #007bff;
-        }
-        center {
-            padding: 20px;
         }
         a {
             color: #007bff;
@@ -26,107 +26,137 @@
         a:hover {
             color: #0056b3;
         }
-        table {
-            background-color: #ffffff;
-        }
-        table thead th {
-            background-color: #007bff;
-            color: white;
-        }
-        td img {
-            display: block;
-            margin: auto;
-        }
-        .floating-box {
+        .floating-search-bar {
             position: fixed;
-            bottom: 20px;
+            top: 20px;
             right: 20px;
             display: flex;
             flex-direction: column;
-        }
-        .floating-box a {
-            margin: 5px;
+            background-color: #ffffff;
             padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .floating-search-bar input {
+            margin-bottom: 10px;
+        }
+        .floating-search-bar button {
             background-color: #007bff;
             color: white;
-            text-align: center;
+            border: none;
             border-radius: 5px;
-            text-decoration: none;
-            transition: background-color 0.3s;
+            cursor: pointer;
+            padding: 5px 10px;
         }
-        .floating-box a:hover {
+        .floating-search-bar button:hover {
             background-color: #0056b3;
+        }
+        .book-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .book-item {
+            background-color: #ffffff;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            text-align: center;
+            width: 150px;
+        }
+        .book-item img {
+            max-width: 100px;
+            margin: 0 auto 10px;
+        }
+        .book-details {
+            margin-top: 20px;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
 <body>
-    <center>
-        <h1>IT 4403 Individual Project</h1>
-        <h2>Omar Rodriguez <br/> 
-            College of Computing and Software Engineering <br/>
-            Added main menu with two additional web pages. This is Project Milestone 2.
-        </h2>
-        <h3>IT 4403: Advanced Web and Mobile App <br/>
-            <a href="https://www.kennesaw.edu/ccse/academics/information-technology/">Department of Information Technology</a>
-        </h3>
-        <h3>Project Information: <br/>
-            Milestone 1: JSON<br/>
-            Milestone 2: Google Books API <br/>
-            Milestone 3: Book Search AJAX <br/>
-            Milestone 4: Improved SPA UI
-        </h3>
-        <table id="table" class="table table-bordered table-hover">
-            <thead>
-                <tr>
-                    <th>Book Cover</th>
-                    <th>Book Author</th>
-                    <th>Book Title</th>
-                    <th>Book Subtitle</th>
-                    <th>Book Publisher</th>
-                    <th>Published Date</th>
-                    <th>Book Description</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-    </center>
-    <div class="floating-box">
-        <a href="book.html">Book Details</a>
-        <a href="bookshelf.html">My Bookshelf</a>
+    <div class="container">
+        <h1>Welcome to My Book App</h1>
+        <div id="book-details" class="book-details"></div>
+        <div id="search-results" class="book-list"></div>
     </div>
-    <script> 
-        $(document).ready(function () { 
-            $.getJSON("https://www.googleapis.com/books/v1/volumes?q=modern%20web", function (data) { 
-                var book = ''; 
-                $.each(data.items, function (key, value) { 
-                    var authors = value.volumeInfo.authors ? value.volumeInfo.authors.join(", ") : "N/A";
-                    var title = value.volumeInfo.title ? value.volumeInfo.title : "N/A";
-                    var subtitle = value.volumeInfo.subtitle ? value.volumeInfo.subtitle : "N/A";
-                    var publisher = value.volumeInfo.publisher ? value.volumeInfo.publisher : "N/A";
-                    var publishedDate = value.volumeInfo.publishedDate ? value.volumeInfo.publishedDate : "N/A";
-                    var description = value.volumeInfo.description ? value.volumeInfo.description.substring(0, 100) + '...' : "N/A";
-                    var thumbnail = value.volumeInfo.imageLinks && value.volumeInfo.imageLinks.thumbnail ? value.volumeInfo.imageLinks.thumbnail : "https://via.placeholder.com/128x195?text=No+Image";
-                    var infoLink = value.volumeInfo.infoLink ? value.volumeInfo.infoLink : "#";
+    <div class="floating-search-bar">
+        <input type="text" id="floating-search-input" class="form-control" placeholder="Search for a book">
+        <button id="floating-search-button">Search</button>
+    </div>
+    <script>
+        $(document).ready(function () {
+            const itemsPerPage = 10;
+            let searchQuery = '';
 
-                    book += '<tr>'; 
-                    book += '<td><img src="' + thumbnail + '" alt="Book cover" width="128" height="195"></td>'; 
-                    book += '<td>' + authors + '</td>'; 
-                    book += '<td>' + title + '</td>'; 
-                    book += '<td>' + subtitle + '</td>'; 
-                    book += '<td>' + publisher + '</td>'; 
-                    book += '<td>' + publishedDate + '</td>'; 
-                    book += '<td>' + description + ' <a href="' + infoLink + '" target="_blank">See more</a></td>'; 
-                    book += '</tr>'; 
-                }); 
-                $('#table tbody').append(book); 
-            }).fail(function() {
-                console.error("An error occurred while fetching the JSON data.");
+            const displayBookDetails = (book) => {
+                $('#book-details').html(`
+                    <img src="${book.imageLinks ? book.imageLinks.thumbnail : 'https://via.placeholder.com/200x300?text=No+Image'}" alt="Book Cover">
+                    <h2>${book.title || 'No Title'}</h2>
+                    <h4>Authors: ${book.authors ? book.authors.join(", ") : 'N/A'}</h4>
+                    <p>Publisher: ${book.publisher || 'N/A'}</p>
+                    <p>Published Date: ${book.publishedDate || 'N/A'}</p>
+                    <p>Description: ${book.description || 'N/A'}</p>
+                    <p>Page Count: ${book.pageCount || 'N/A'}</p>
+                    <p>Categories: ${book.categories ? book.categories.join(", ") : 'N/A'}</p>
+                    <p>Average Rating: ${book.averageRating || 'N/A'}</p>
+                    <p><a href="${book.infoLink}" target="_blank">More Info</a></p>
+                `);
+            };
+
+            const displaySearchResults = (books) => {
+                $('#search-results').empty();
+                books.forEach(book => {
+                    const bookInfo = book.volumeInfo;
+                    $('#search-results').append(`
+                        <div class="book-item" data-id="${book.id}">
+                            <img src="${bookInfo.imageLinks ? bookInfo.imageLinks.thumbnail : 'https://via.placeholder.com/100x150?text=No+Image'}" alt="Book Cover">
+                            <p>${bookInfo.title || 'No Title'}</p>
+                        </div>
+                    `);
+                });
+
+                $('.book-item').click(function () {
+                    const bookId = $(this).data('id');
+                    fetchBookDetails(bookId);
+                });
+            };
+
+            const fetchSearchResults = (query) => {
+                const apiUrl = `https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=${itemsPerPage}`;
+                $.getJSON(apiUrl, function (data) {
+                    searchQuery = query;
+                    displaySearchResults(data.items);
+                }).fail(function () {
+                    $('#search-results').html('<p>An error occurred while fetching the search results.</p>');
+                });
+            };
+
+            const fetchBookDetails = (bookId) => {
+                const apiUrl = 'https://www.googleapis.com/books/v1/volumes/' + bookId;
+                $.getJSON(apiUrl, function (data) {
+                    displayBookDetails(data.volumeInfo);
+                }).fail(function () {
+                    $('#book-details').html('<p>An error occurred while fetching the book details.</p>');
+                });
+            };
+
+            $('#floating-search-button').click(function () {
+                const query = $('#floating-search-input').val();
+                if (query) {
+                    fetchSearchResults(query);
+                }
             });
-        }); 
-    </script> 
+        });
+    </script>
 </body>
 </html>
+
 
 
 
