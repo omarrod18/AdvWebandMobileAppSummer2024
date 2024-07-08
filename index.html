@@ -1,35 +1,61 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Books Search</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <title>IT 4403 Individual Project: Milestone #1</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
             margin: 0;
+            padding: 0;
+        }
+        h1, h2, h3 {
+            color: #007bff;
+        }
+        center {
             padding: 20px;
-            background-color: #f4f4f4;
         }
-        #search-container {
-            margin-bottom: 20px;
+        a {
+            color: #007bff;
+            text-decoration: none;
         }
-        #search-results {
+        a:hover {
+            color: #0056b3;
+        }
+        table {
+            background-color: #ffffff;
+        }
+        table thead th {
+            background-color: #007bff;
+            color: white;
+        }
+        td img {
+            display: block;
+            margin: auto;
+        }
+        .floating-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
         }
-        .book-item {
-            margin: 10px;
+        .floating-box a {
+            margin: 5px;
             padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            width: 200px;
+            background-color: #007bff;
+            color: white;
             text-align: center;
-            background-color: #fff;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s;
         }
-        .book-item img {
-            max-width: 100%;
-            height: auto;
+        .floating-box a:hover {
+            background-color: #0056b3;
         }
         .pagination {
             margin-top: 20px;
@@ -47,27 +73,44 @@
         .pagination button.active {
             background-color: #0056b3;
         }
-        #book-details {
-            margin-top: 20px;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #fff;
-        }
     </style>
 </head>
 <body>
-    <div id="search-container">
-        <input type="text" id="search-term" placeholder="Search for books...">
-        <button id="search-button">Search</button>
+    <center>
+        <h1>IT 4403 Individual Project</h1>
+        <h2>Omar Rodriguez <br/>
+            College of Computing and Software Engineering <br/>
+            Added main menu with two additional web pages. This is Project Milestone 2.
+        </h2>
+        <h3>IT 4403: Advanced Web and Mobile App <br/>
+            <a href="https://www.kennesaw.edu/ccse/academics/information-technology/">Department of Information Technology</a>
+        </h3>
+        <h3>Project Information: <br/>
+            Milestone 1: JSON<br/>
+            Milestone 2: Google Books API <br/>
+            Milestone 3: Book Search AJAX <br/>
+            Milestone 4: Improved SPA UI
+        </h3>
+        <div>
+            <input type="text" id="search-term" placeholder="Search for books...">
+            <button id="search-button">Search</button>
+        </div>
+        <table id="table" class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>Book Cover</th>
+                    <th>Book Title</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div class="pagination"></div>
+        <div id="book-details" style="display:none;"></div>
+    </center>
+    <div class="floating-box">
+        <a href="book.html">Book Details</a>
+        <a href="bookshelf.html">My Bookshelf</a>
     </div>
-
-    <div id="search-results"></div>
-    <div class="pagination"></div>
-
-    <div id="book-details" style="display:none;"></div>
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
         const apiKey = 'YOUR_GOOGLE_BOOKS_API_KEY';
         let currentPage = 1;
@@ -93,13 +136,13 @@
         }
 
         function displayResults(data) {
-            $('#search-results').empty();
+            $('#table tbody').empty();
             data.items.forEach(item => {
-                const bookItem = `<div class="book-item" data-id="${item.id}">
-                                    <img src="${item.volumeInfo.imageLinks?.thumbnail}" alt="${item.volumeInfo.title}">
-                                    <h4>${item.volumeInfo.title}</h4>
-                                  </div>`;
-                $('#search-results').append(bookItem);
+                const bookItem = `<tr class="book-item" data-id="${item.id}">
+                                    <td><img src="${item.volumeInfo.imageLinks?.thumbnail}" alt="${item.volumeInfo.title}" width="128" height="195"></td>
+                                    <td>${item.volumeInfo.title}</td>
+                                  </tr>`;
+                $('#table tbody').append(bookItem);
             });
 
             totalPages = Math.ceil(data.totalItems / 10);
