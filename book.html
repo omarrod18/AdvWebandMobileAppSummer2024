@@ -112,7 +112,7 @@
     </div>
     <script>
         $(document).ready(function () {
-            const itemsPerPage = 10;
+            const itemsPerPage = 10; // Reverted to 10 books per page
             let currentPage = 1;
             let totalItems = 0;
             let searchQuery = '';
@@ -156,8 +156,9 @@
             const displayPagination = (totalItems, currentPage) => {
                 $('#pagination').empty();
                 const totalPages = Math.ceil(totalItems / itemsPerPage);
+                const pagesToShow = Math.min(totalPages, 10); // Show up to 10 pages
 
-                for (let i = 1; i <= totalPages; i++) {
+                for (let i = 1; i <= pagesToShow; i++) {
                     $('#pagination').append(`
                         <button class="${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>
                     `);
@@ -214,5 +215,6 @@
     </script>
 </body>
 </html>
+
 
 
