@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <title>Book Details - IT 4403</title>
+    <title>Book Details - IT 4403 Individual Project Milestone 3</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -63,7 +63,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Book Details - IT 4403 Individual Project Milestone 2</h1>
+        <h1>Book Details - IT 4403 Individual Project Milestone #3</h1>
         <div class="search-bar">
             <input type="text" id="search-input" class="form-control" placeholder="Search for a book">
             <button id="search-button" class="btn btn-primary mt-2">Search</button>
@@ -87,7 +87,6 @@
     </div>
     <script>
         const apiKey = 'AIzaSyDJBWE0Ji-2QCq6W1Agt8XwK7vKAukP4II';
-
         $(document).ready(function () {
             $('#search-button').click(function () {
                 const query = $('#search-input').val();
@@ -95,14 +94,12 @@
                     searchBook(query);
                 }
             });
-
             const urlParams = new URLSearchParams(window.location.search);
             const bookId = urlParams.get('id');
             if (bookId) {
                 fetchBookDetails(bookId);
             }
         });
-
         function searchBook(query) {
             $.getJSON(`https://www.googleapis.com/books/v1/volumes?q=${query}&key=${apiKey}`, function (data) {
                 if (data.items && data.items.length > 0) {
@@ -114,7 +111,6 @@
                 $('#book-details').html('<p>An error occurred while searching for the book.</p>');
             });
         }
-
         function fetchBookDetails(bookId) {
             $.getJSON(`https://www.googleapis.com/books/v1/volumes/${bookId}?key=${apiKey}`, function (data) {
                 displayBookDetails(data.volumeInfo);
@@ -122,7 +118,6 @@
                 $('#book-details').html('<p>An error occurred while fetching the book details.</p>');
             });
         }
-
         function displayBookDetails(book) {
             $('#book-cover').attr('src', book.imageLinks ? book.imageLinks.thumbnail : 'https://via.placeholder.com/200x300?text=No+Image');
             $('#book-title').text(book.title || 'No Title');
