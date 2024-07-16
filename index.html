@@ -1,180 +1,151 @@
-<!DOCTYPE html>
-<html>
 <head>
-    <meta charset="utf-8">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <title>IT 4403 Individual Project: Milestone #3</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f8f9fa;
-            color: #343a40;
-            margin: 0;
-            padding: 0;
-        }
-        h1, h2, h3 {
-            color: #007bff;
-        }
-        center {
-            padding: 20px;
-        }
-        a {
-            color: #007bff;
-            text-decoration: none;
-        }
-        a:hover {
-            color: #0056b3;
-        }
-        table {
-            background-color: #ffffff;
-        }
-        table thead th {
-            background-color: #007bff;
-            color: white;
-        }
-        td img {
-            display: block;
-            margin: auto;
-        }
-        .floating-box {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            flex-direction: column;
-        }
-        .floating-box a {
-            margin: 5px;
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
-            text-align: center;
-            border-radius: 5px;
-            text-decoration: none;
-            transition: background-color 0.3s;
-        }
-        .floating-box a:hover {
-            background-color: #0056b3;
-        }
-        .pagination {
-            margin-top: 20px;
-            text-align: center;
-        }
-        .pagination button {
-            margin: 0 5px;
-            padding: 10px 15px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .pagination button.active {
-            background-color: #0056b3;
-        }
-    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/4.2.0/mustache.min.js"></script>
 </head>
 <body>
-    <center>
-        <h1>IT 4403 Individual Project</h1>
-        <h2>Omar Rodriguez <br/>
-            College of Computing and Software Engineering <br/>
-            This updated page now displays a search bar for the user to look up books and pages results. This is Project Milestone 3.
-        </h2>
-        <h3>IT 4403: Advanced Web and Mobile App <br/>
-            <a href="https://www.kennesaw.edu/ccse/academics/information-technology/">Department of Information Technology</a>
-        </h3>
-        <h3>Project Information: <br/>
-            Milestone 1: JSON<br/>
-            Milestone 2: Google Books API <br/>
-            Milestone 3: Book Search AJAX <br/>
-            Milestone 4: Improved SPA UI
-        </h3>
-        <div>
-            <input type="text" id="search-term" placeholder="Search for books...">
-            <button id="search-button">Search</button>
+    <div id="view-toggle" style="text-align: center; margin: 20px;">
+        <button id="grid-view-button">Grid View</button>
+        <button id="list-view-button">List View</button>
+    </div>
+    <div id="search-results" class="row"></div>
+    <template id="grid-template">
+        {{#items}}
+        <div class="col-md-4">
+            <div class="book-item">
+                <img src="{{thumbnail}}" alt="Book cover">
+                <h5><a href="#" class="book-link" data-id="{{id}}">{{title}}</a></h5>
+            </div>
         </div>
-        <table id="table" class="table table-bordered table-hover">
-            <thead>
-                <tr>
-                    <th>Book Cover</th>
-                    <th>Book Title</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-        <div class="pagination"></div>
-        <div id="book-details" style="display:none;"></div>
-    </center>
-    <div class="floating-box">
-        <a href="book.html">Book Details</a>
-        <a href="bookshelf.html">My Bookshelf</a>
+        {{/items}}
+    </template>
+    <template id="list-template">
+        {{#items}}
+        <div class="col-12">
+            <div class="book-item">
+                <img src="{{thumbnail}}" alt="Book cover" style="float:left; margin-right: 20px;">
+                <h5><a href="#" class="book-link" data-id="{{id}}">{{title}}</a></h5>
+            </div>
+        </div>
+        {{/items}}
+    </template>
+    <div id="book-details" class="book-details" style="display:none;"></div>
+    <template id="book-details-template">
+        <img id="book-cover" src="{{thumbnail}}" alt="Book cover">
+        <h2>{{title}}</h2>
+        <h4>{{authors}}</h4>
+        <p>{{publisher}}</p>
+        <p>{{publishedDate}}</p>
+        <p>{{description}}</p>
+        <p>{{pageCount}}</p>
+        <p>{{categories}}</p>
+        <p>{{averageRating}}</p>
+        <p><a href="{{infoLink}}" target="_blank">More Info</a></p>
+    </template>
+    <div class="pagination"></div>
+    
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link active" id="search-tab" data-toggle="tab" href="#search-results-tab">Search Results</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="bookshelf-tab" data-toggle="tab" href="#bookshelf-tab-content">Bookshelf</a>
+        </li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="search-results-tab">
+            <div id="search-results" class="row"></div>
+        </div>
+        <div class="tab-pane fade" id="bookshelf-tab-content">
+            <!-- Bookshelf content will be loaded here -->
+        </div>
     </div>
     <script>
         const apiKey = 'AIzaSyDJBWE0Ji-2QCq6W1Agt8XwK7vKAukP4II';
+        const gridTemplate = document.getElementById('grid-template').innerHTML;
+        const listTemplate = document.getElementById('list-template').innerHTML;
+        const bookDetailsTemplate = document.getElementById('book-details-template').innerHTML;
+        let currentData = null;
         let currentPage = 1;
-        let totalPages = 0;
-        let searchTerm = '';
+        const itemsPerPage = 10;
+        let totalPages = 1;
         $(document).ready(function () {
             $('#search-button').click(function () {
-                searchTerm = $('#search-term').val();
-                currentPage = 1;
-                searchBooks();
-            });
-        });
-        function searchBooks() {
-            $.ajax({
-                url: `https://www.googleapis.com/books/v1/volumes?q=${searchTerm}&startIndex=${(currentPage - 1) * 10}&maxResults=10&key=${apiKey}`,
-                type: 'GET',
-                success: function (data) {
-                    displayResults(data);
+                const query = $('#search-input').val();
+                if (query) {
+                    searchBooks(query);
                 }
             });
-        }
-        function displayResults(data) {
-            $('#table tbody').empty();
-            data.items.forEach(item => {
-                const bookItem = `<tr class="book-item" data-id="${item.id}">
-                                    <td><img src="${item.volumeInfo.imageLinks?.thumbnail}" alt="${item.volumeInfo.title}" width="128" height="195"></td>
-                                    <td>${item.volumeInfo.title}</td>
-                                  </tr>`;
-                $('#table tbody').append(bookItem);
+            document.getElementById('grid-view-button').addEventListener('click', () => {
+                renderBooks(currentData, 'grid');
             });
-            totalPages = Math.ceil(data.totalItems / 10);
-            updatePagination();
-            $('.book-item').click(function () {
-                const bookId = $(this).data('id');
-                displayBookDetails(bookId);
+            document.getElementById('list-view-button').addEventListener('click', () => {
+                renderBooks(currentData, 'list');
+            });
+            $('#bookshelf-tab').on('shown.bs.tab', function (e) {
+                if (!$('#bookshelf-tab-content').html()) {
+                    $('#bookshelf-tab-content').load('bookshelf.html');
+                }
+            });
+        });
+        function searchBooks(query) {
+            $.getJSON(`https://www.googleapis.com/books/v1/volumes?q=${query}&key=${apiKey}&startIndex=${(currentPage-1) * itemsPerPage}&maxResults=${itemsPerPage}`, function (data) {
+                currentData = data;
+                totalPages = Math.ceil(data.totalItems / itemsPerPage);
+                renderBooks(data, 'grid');
+                updatePagination();
+            }).fail(function () {
+                $('#search-results').html('<p>An error occurred while searching for the book.</p>');
+            });
+        }
+        function renderBooks(data, view = 'grid') {
+            const template = view === 'grid' ? gridTemplate : listTemplate;
+            const rendered = Mustache.render(template, { items: data.items.map(item => ({
+                id: item.id,
+                title: item.volumeInfo.title,
+                thumbnail: item.volumeInfo.imageLinks ? item.volumeInfo.imageLinks.thumbnail : 'https://via.placeholder.com/150x200?text=No+Image'
+            })) });
+            document.getElementById('search-results').innerHTML = rendered;
+            document.querySelectorAll('.book-link').forEach(link => {
+                link.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    displayBookDetails(this.dataset.id);
+                });
+            });
+        }
+        function displayBookDetails(bookId) {
+            $.getJSON(`https://www.googleapis.com/books/v1/volumes/${bookId}?key=${apiKey}`, function (data) {
+                const book = data.volumeInfo;
+                const rendered = Mustache.render(bookDetailsTemplate, {
+                    thumbnail: book.imageLinks ? book.imageLinks.thumbnail : 'https://via.placeholder.com/200x300?text=No+Image',
+                    title: book.title || 'No Title',
+                    authors: 'Authors: ' + (book.authors ? book.authors.join(", ") : 'N/A'),
+                    publisher: 'Publisher: ' + (book.publisher || 'N/A'),
+                    publishedDate: 'Published Date: ' + (book.publishedDate || 'N/A'),
+                    description: 'Description: ' + (book.description || 'N/A'),
+                    pageCount: 'Page Count: ' + (book.pageCount || 'N/A'),
+                    categories: 'Categories: ' + (book.categories ? book.categories.join(", ") : 'N/A'),
+                    averageRating: 'Average Rating: ' + (book.averageRating || 'N/A'),
+                    infoLink: book.infoLink
+                });
+                $('#book-details').html(rendered).show();
+            }).fail(function () {
+                $('#book-details').html('<p>An error occurred while fetching the book details.</p>');
             });
         }
         function updatePagination() {
             $('.pagination').empty();
-            for (let i = 1; i <= totalPages; i++) {
-                const pageButton = `<button class="${i === currentPage ? 'active' : ''}" onclick="gotoPage(${i})">${i}</button>`;
-                $('.pagination').append(pageButton);
+            if (totalPages > 1) {
+                for (let i = 1; i <= totalPages; i++) {
+                    const pageButton = `<button class="${i === currentPage ? 'active' : ''}" onclick="gotoPage(${i})">${i}</button>`;
+                    $('.pagination').append(pageButton);
+                }
             }
         }
         function gotoPage(page) {
             currentPage = page;
-            searchBooks();
-        }
-        function displayBookDetails(bookId) {
-            $.ajax({
-                url: `https://www.googleapis.com/books/v1/volumes/${bookId}?key=${apiKey}`,
-                type: 'GET',
-                success: function (data) {
-                    $('#book-details').show().html(`<h2>${data.volumeInfo.title}</h2>
-                                                    <p>${data.volumeInfo.description}</p>
-                                                    <img src="${data.volumeInfo.imageLinks?.thumbnail}" alt="${data.volumeInfo.title}">
-                                                    <p>Author: ${data.volumeInfo.authors?.join(', ')}</p>
-                                                    <p>Published Date: ${data.volumeInfo.publishedDate}</p>`);
-                }
-            });
+            searchBooks($('#search-input').val());
         }
     </script>
 </body>
-</html>
 
 
 
