@@ -74,34 +74,26 @@
         .pagination button.active {
             background-color: #0056b3;
         }
+        .results-grid .book-item {
+            display: inline-block;
+            width: 200px;
+            margin: 10px;
+        }
+        .results-list .book-item {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+        }
+        .book-item img {
+            display: block;
+            margin: 0 auto 10px;
+        }
+        .book-item p {
+            text-align: center;
+        }
     </style>
 </head>
 <body>
-    <div id="view-toggle" style="text-align: center; margin: 20px;">
-        <button id="grid-view-button">Grid View</button>
-        <button id="list-view-button">List View</button>
-    </div>
-    <div id="search-results" class="row"></div>
-    <template id="grid-template">
-        {{#items}}
-        <div class="col-md-4">
-            <div class="book-item">
-                <img src="{{thumbnail}}" alt="Book cover">
-                <h5><a href="#" class="book-link" data-id="{{id}}">{{title}}</a></h5>
-            </div>
-        </div>
-        {{/items}}
-    </template>
-    <template id="list-template">
-        {{#items}}
-        <div class="col-12">
-            <div class="book-item">
-                <img src="{{thumbnail}}" alt="Book cover" style="float:left; margin-right: 20px;">
-                <h5><a href="#" class="book-link" data-id="{{id}}">{{title}}</a></h5>
-            </div>
-        </div>
-        {{/items}}
-    </template>
     <center>
         <h1>IT 4403 Individual Project</h1>
         <h2>Omar Rodriguez <br/>
@@ -120,35 +112,68 @@
         <div>
             <input type="text" id="search-term" placeholder="Search for books...">
             <button id="search-button">Search</button>
+            <button id="view-toggle">Toggle View</button>
         </div>
-        <table id="table" class="table table-bordered table-hover">
-            <thead>
-                <tr>
-                    <th>Book Cover</th>
-                    <th>Book Title</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <div id="results-container" class="results-grid"></div> <!-- Container for search results -->
         <div class="pagination"></div>
         <div id="book-details" style="display:none;"></div>
+        <div id="top-selling-books"></div> <!-- Container for top-selling books -->
     </center>
     <div class="floating-box">
         <a href="book.html">Book Details</a>
         <a href="bookshelf.html">My Bookshelf</a>
     </div>
+    
+    <!-- Templates for Mustache.js -->
+    <script id="search-results-template" type="x-tmpl-mustache">
+        {{#books}}
+        <div class="book-item" data-id="{{id}}">
+            <img src="{{thumbnail}}" alt="{{title}}" width="128" height="195">
+            <p>{{title}}</p>
+        </div>
+        {{/books}}
+    </script>
+
+    <script id="book-details-template" type="x-tmpl-mustache">
+        <h2>{{title}}</h2>
+        <p>{{description}}</p>
+        <img src="{{thumbnail}}" alt="{{title}}">
+        <p>Author: {{authors}}</p>
+        <p>Published Date: {{publishedDate}}</p>
+    </script>
+
+    <script id="bookshelf-template" type="x-tmpl-mustache">
+        {{#books}}
+        <div class="bookshelf-item" data-id="{{id}}">
+            <img src="{{thumbnail}}" alt="{{title}}" width="128" height="195">
+            <p>{{title}}</p>
+        </div>
+        {{/books}}
+    </script>
+
     <script>
         const apiKey = 'AIzaSyDJBWE0Ji-2QCq6W1Agt8XwK7vKAukP4II';
         let currentPage = 1;
         let totalPages = 0;
         let searchTerm = '';
+        let viewMode = 'grid'; // Default view mode
+
         $(document).ready(function () {
             $('#search-button').click(function () {
                 searchTerm = $('#search-term').val();
                 currentPage = 1;
                 searchBooks();
             });
+
+            $('#view-toggle').click(function () {
+                viewMode = viewMode === 'grid' ? 'list' : 'grid';
+                $('#results-container').toggleClass('results-grid results-list');
+                searchBooks();
+            });
+
+            fetchTopSellingBooks();
         });
+
         function searchBooks() {
             $.ajax({
                 url: `https://www.googleapis.com/books/v1/volumes?q=${searchTerm}&startIndex=${(currentPage - 1) * 10}&maxResults=10&key=${apiKey}`,
@@ -158,22 +183,26 @@
                 }
             });
         }
+
         function displayResults(data) {
-            $('#table tbody').empty();
-            data.items.forEach(item => {
-                const bookItem = `<tr class="book-item" data-id="${item.id}">
-                                    <td><img src="${item.volumeInfo.imageLinks?.thumbnail}" alt="${item.volumeInfo.title}" width="128" height="195"></td>
-                                    <td>${item.volumeInfo.title}</td>
-                                  </tr>`;
-                $('#table tbody').append(bookItem);
-            });
+            const template = document.getElementById('search-results-template').innerHTML;
+            const books = data.items.map(item => ({
+                id: item.id,
+                thumbnail: item.volumeInfo.imageLinks?.thumbnail || '',
+                title: item.volumeInfo.title
+            }));
+            const rendered = Mustache.render(template, { books });
+            $('#results-container').html(rendered);
+
             totalPages = Math.ceil(data.totalItems / 10);
             updatePagination();
+            
             $('.book-item').click(function () {
                 const bookId = $(this).data('id');
                 displayBookDetails(bookId);
             });
         }
+
         function updatePagination() {
             $('.pagination').empty();
             for (let i = 1; i <= totalPages; i++) {
@@ -181,54 +210,51 @@
                 $('.pagination').append(pageButton);
             }
         }
+
         function gotoPage(page) {
             currentPage = page;
             searchBooks();
         }
+
         function displayBookDetails(bookId) {
             $.ajax({
                 url: `https://www.googleapis.com/books/v1/volumes/${bookId}?key=${apiKey}`,
                 type: 'GET',
                 success: function (data) {
-                    $('#book-details').show().html(`<h2>${data.volumeInfo.title}</h2>
-                                                    <p>${data.volumeInfo.description}</p>
-                                                    <img src="${data.volumeInfo.imageLinks?.thumbnail}" alt="${data.volumeInfo.title}">
-                                                    <p>Author: ${data.volumeInfo.authors?.join(', ')}</p>
-                                                    <p>Published Date: ${data.volumeInfo.publishedDate}</p>`);
+                    const template = document.getElementById('book-details-template').innerHTML;
+                    const book = {
+                        title: data.volumeInfo.title,
+                        description: data.volumeInfo.description || 'No description available',
+                        thumbnail: data.volumeInfo.imageLinks?.thumbnail || '',
+                        authors: data.volumeInfo.authors?.join(', ') || 'Unknown',
+                        publishedDate: data.volumeInfo.publishedDate || 'Unknown'
+                    };
+                    const rendered = Mustache.render(template, book);
+                    $('#book-details').html(rendered).show();
                 }
             });
         }
-        const gridTemplate = document.getElementById('grid-template').innerHTML;
-        const listTemplate = document.getElementById('list-template').innerHTML;
-        document.getElementById('grid-view-button').addEventListener('click', () => {
-            renderBooks(currentData, 'grid');
-        });
-        document.getElementById('list-view-button').addEventListener('click', () => {
-            renderBooks(currentData, 'list');
-        });
-        function renderBooks(data, view = 'grid') {
-            const template = view === 'grid' ? gridTemplate : listTemplate;
-            const rendered = Mustache.render(template, { items: data.items.map(item => ({
-                id: item.id,
-                title: item.volumeInfo.title,
-                thumbnail: item.volumeInfo.imageLinks ? item.volumeInfo.imageLinks.thumbnail : 'https://via.placeholder.com/150x200?text=No+Image'
-            })) });
-            document.getElementById('search-results').innerHTML = rendered;
-            document.querySelectorAll('.book-link').forEach(link => {
-                link.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    displayBookDetails(this.dataset.id);
-                });
+
+        function fetchTopSellingBooks() {
+            $.ajax({
+                url: `https://www.googleapis.com/books/v1/volumes?q=best+sellers&maxResults=10&key=${apiKey}`,
+                type: 'GET',
+                success: function (data) {
+                    const template = document.getElementById('search-results-template').innerHTML;
+                    const books = data.items.map(item => ({
+                        id: item.id,
+                        thumbnail: item.volumeInfo.imageLinks?.thumbnail || '',
+                        title: item.volumeInfo.title
+                    }));
+                    const rendered = Mustache.render(template, { books });
+                    $('#top-selling-books').html(rendered);
+                }
             });
-        }
-        function displayResults(data) {
-            currentData = data;  // Save the data to switch views
-            renderBooks(data, 'grid');  // Default to grid view
-            updatePagination();
         }
     </script>
 </body>
 </html>
+
 
 
 
