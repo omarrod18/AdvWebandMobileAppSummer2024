@@ -67,7 +67,7 @@
         <h1>IT 4403 Individual Project</h1>
         <h2>Omar Rodriguez <br/>
             College of Computing and Software Engineering <br/>
-            This updated page now displays a search bar for the user to look up books and pages results. This is Project Milestone 3.
+            This updated page now displays a search bar for the user to look up books and pages results. This is Project Milestone 4.
         </h2>
         <h3>IT 4403: Advanced Web and Mobile App <br/>
             <a href="https://www.kennesaw.edu/ccse/academics/information-technology/">Department of Information Technology</a>
@@ -83,17 +83,15 @@
             <button id="search-button">Search</button>
             <button id="view-toggle">Toggle View</button>
         </div>
-        <div id="results-container" class="results-grid"></div> <!-- Container for search results -->
+        <div id="results-container" class="results-grid"></div>
         <div class="pagination"></div>
         <div id="book-details" style="display:none;"></div>
-        <div id="top-selling-books"></div> <!-- Container for top-selling books -->
+        <div id="top-selling-books"></div> 
     </center>
     <div class="floating-box">
         <a href="book.html">Book Details</a>
         <a href="bookshelf.html">My Bookshelf</a>
     </div>
-    
-    <!-- Templates for Mustache.js -->
     <script id="search-results-template" type="x-tmpl-mustache">
         {{#books}}
         <div class="book-item" data-id="{{id}}">
@@ -102,7 +100,6 @@
         </div>
         {{/books}}
     </script>
-
     <script id="book-details-template" type="x-tmpl-mustache">
         <h2>{{title}}</h2>
         <p>{{description}}</p>
@@ -110,7 +107,6 @@
         <p>Author: {{authors}}</p>
         <p>Published Date: {{publishedDate}}</p>
     </script>
-
     <script id="bookshelf-template" type="x-tmpl-mustache">
         {{#books}}
         <div class="bookshelf-item" data-id="{{id}}">
@@ -119,14 +115,12 @@
         </div>
         {{/books}}
     </script>
-
     <script>
         const apiKey = 'AIzaSyDJBWE0Ji-2QCq6W1Agt8XwK7vKAukP4II';
         let currentPage = 1;
         let totalPages = 0;
         let searchTerm = '';
-        let viewMode = 'grid'; // Default view mode
-
+        let viewMode = 'grid';
         $(document).ready(function () {
             $('#search-button').click(function () {
                 searchTerm = $('#search-term').val();
@@ -134,16 +128,13 @@
                 currentPage = 1;
                 searchBooks();
             });
-
             $('#view-toggle').click(function () {
                 viewMode = viewMode === 'grid' ? 'list' : 'grid';
                 $('#results-container').toggleClass('results-grid results-list');
                 searchBooks();
             });
-
-            fetchTopSellingBooks();
+           fetchTopSellingBooks();
         });
-
         function searchBooks() {
             $.ajax({
                 url: `https://www.googleapis.com/books/v1/volumes?q=${searchTerm}&startIndex=${(currentPage - 1) * 10}&maxResults=10&key=${apiKey}`,
@@ -157,7 +148,6 @@
                 }
             });
         }
-
         function displayResults(data) {
             const template = document.getElementById('search-results-template').innerHTML;
             const books = data.items.map(item => ({
@@ -168,16 +158,13 @@
             console.log('Books to render:', books); // Debugging output
             const rendered = Mustache.render(template, { books });
             $('#results-container').html(rendered);
-
             totalPages = Math.ceil(data.totalItems / 10);
             updatePagination();
-            
             $('.book-item').click(function () {
                 const bookId = $(this).data('id');
                 displayBookDetails(bookId);
             });
         }
-
         function updatePagination() {
             $('.pagination').empty();
             for (let i = 1; i <= totalPages; i++) {
@@ -185,12 +172,10 @@
                 $('.pagination').append(pageButton);
             }
         }
-
         function gotoPage(page) {
             currentPage = page;
             searchBooks();
         }
-
         function displayBookDetails(bookId) {
             $.ajax({
                 url: `https://www.googleapis.com/books/v1/volumes/${bookId}?key=${apiKey}`,
@@ -213,7 +198,6 @@
                 }
             });
         }
-
         function fetchTopSellingBooks() {
             $.ajax({
                 url: `https://www.googleapis.com/books/v1/volumes?q=best+sellers&maxResults=10&key=${apiKey}`,
@@ -226,7 +210,7 @@
                         thumbnail: item.volumeInfo.imageLinks?.thumbnail || '',
                         title: item.volumeInfo.title
                     }));
-                    console.log('Top selling books to render:', books); // Debugging output
+                    console.log('Top selling books to render:', books);
                     const rendered = Mustache.render(template, { books });
                     $('#top-selling-books').html(rendered);
                 },
