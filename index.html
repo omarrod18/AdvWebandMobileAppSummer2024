@@ -165,6 +165,7 @@
                 thumbnail: item.volumeInfo.imageLinks?.thumbnail || '',
                 title: item.volumeInfo.title
             }));
+            console.log('Books to render:', books); // Debugging output
             const rendered = Mustache.render(template, { books });
             $('#results-container').html(rendered);
 
@@ -225,6 +226,7 @@
                         thumbnail: item.volumeInfo.imageLinks?.thumbnail || '',
                         title: item.volumeInfo.title
                     }));
+                    console.log('Top selling books to render:', books); // Debugging output
                     const rendered = Mustache.render(template, { books });
                     $('#top-selling-books').html(rendered);
                 },
@@ -236,6 +238,7 @@
     </script>
 </body>
 </html>
+
 
 
 
