@@ -1,13 +1,14 @@
 import $ from 'jquery';
 import Mustache from 'mustache';
 
-const apiKey = 'AIzaSyDJBWE0Ji-2QCq6W1Agt8XwK7vKAukP4II';
+const apiKey = 'AIzaSyA8NwX-B4DcmwSQueTy_lp92EV5QBNBLR4';
 let currentPage = 1;
 let totalPages = 0;
 let searchTerm = '';
 let viewMode = 'grid'; // Default view mode
 
 $(document).ready(function () {
+  console.log("Document is ready");
   $('#search-button').click(function () {
     searchTerm = $('#search-term').val();
     console.log(`Search term: ${searchTerm}`);
@@ -25,6 +26,7 @@ $(document).ready(function () {
 });
 
 function searchBooks() {
+  console.log(`Searching books for term: ${searchTerm}`);
   $.ajax({
     url: `https://www.googleapis.com/books/v1/volumes?q=${searchTerm}&startIndex=${(currentPage - 1) * 10}&maxResults=10&key=${apiKey}`,
     type: 'GET',
@@ -72,6 +74,7 @@ function gotoPage(page) {
 }
 
 function displayBookDetails(bookId) {
+  console.log(`Displaying details for book ID: ${bookId}`);
   $.ajax({
     url: `https://www.googleapis.com/books/v1/volumes/${bookId}?key=${apiKey}`,
     type: 'GET',
@@ -95,6 +98,7 @@ function displayBookDetails(bookId) {
 }
 
 function fetchTopSellingBooks() {
+  console.log("Fetching top selling books");
   $.ajax({
     url: `https://www.googleapis.com/books/v1/volumes?q=best+sellers&maxResults=10&key=${apiKey}`,
     type: 'GET',
