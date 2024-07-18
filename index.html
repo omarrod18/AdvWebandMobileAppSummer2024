@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <title>IT 4403 Individual Project: Milestone #3</title>
     <style>
         body {
@@ -25,22 +26,36 @@
         a:hover {
             color: #0056b3;
         }
-        .results-grid .book-item {
-            display: inline-block;
-            width: 200px;
-            margin: 10px;
+        table {
+            background-color: #ffffff;
         }
-        .results-list .book-item {
+        table thead th {
+            background-color: #007bff;
+            color: white;
+        }
+        td img {
             display: block;
-            width: 100%;
-            margin: 10px 0;
+            margin: auto;
         }
-        .book-item img {
-            display: block;
-            margin: 0 auto 10px;
+        .floating-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
         }
-        .book-item p {
+        .floating-box a {
+            margin: 5px;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
             text-align: center;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        .floating-box a:hover {
+            background-color: #0056b3;
         }
         .pagination {
             margin-top: 20px;
@@ -57,6 +72,9 @@
         }
         .pagination button.active {
             background-color: #0056b3;
+        }
+        #top-books {
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -79,45 +97,122 @@
         <div>
             <input type="text" id="search-term" placeholder="Search for books...">
             <button id="search-button">Search</button>
-            <button id="view-toggle">Toggle View</button>
         </div>
-        <div id="results-container" class="results-grid"></div> <!-- Container for search results -->
+        <table id="table" class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>Book Cover</th>
+                    <th>Book Title</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
         <div class="pagination"></div>
         <div id="book-details" style="display:none;"></div>
-        <div id="top-selling-books"></div> <!-- Container for top-selling books -->
+
+        <div id="top-books">
+            <h2>Top 10 Books</h2>
+            <table id="top-books-table" class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Book Cover</th>
+                        <th>Book Title</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </center>
     <div class="floating-box">
         <a href="book.html">Book Details</a>
         <a href="bookshelf.html">My Bookshelf</a>
     </div>
-    
-    <!-- Templates for Mustache.js -->
-    <script id="search-results-template" type="x-tmpl-mustache">
-        {{#books}}
-        <div class="book-item" data-id="{{id}}">
-            <img src="{{thumbnail}}" alt="{{title}}" width="128" height="195">
-            <p>{{title}}</p>
-        </div>
-        {{/books}}
+    <script>
+        const apiKey = 'AIzaSyDJBWE0Ji-2QCq6W1Agt8XwK7vKAukP4II';
+        let currentPage = 1;
+        let totalPages = 0;
+        let searchTerm = '';
+        $(document).ready(function () {
+            $('#search-button').click(function () {
+                searchTerm = $('#search-term').val();
+                currentPage = 1;
+                searchBooks();
+            });
+            fetchTopBooks();
+        });
+        function searchBooks() {
+            $.ajax({
+                url: `https://www.googleapis.com/books/v1/volumes?q=${searchTerm}&startIndex=${(currentPage - 1) * 10}&maxResults=10&key=${apiKey}`,
+                type: 'GET',
+                success: function (data) {
+                    displayResults(data);
+                }
+            });
+        }
+        function displayResults(data) {
+            $('#table tbody').empty();
+            data.items.forEach(item => {
+                const bookItem = `<tr class="book-item" data-id="${item.id}">
+                                    <td><img src="${item.volumeInfo.imageLinks?.thumbnail}" alt="${item.volumeInfo.title}" width="128" height="195"></td>
+                                    <td>${item.volumeInfo.title}</td>
+                                  </tr>`;
+                $('#table tbody').append(bookItem);
+            });
+            totalPages = Math.ceil(data.totalItems / 10);
+            updatePagination();
+            $('.book-item').click(function () {
+                const bookId = $(this).data('id');
+                displayBookDetails(bookId);
+            });
+        }
+        function updatePagination() {
+            $('.pagination').empty();
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = `<button class="${i === currentPage ? 'active' : ''}" onclick="gotoPage(${i})">${i}</button>`;
+                $('.pagination').append(pageButton);
+            }
+        }
+        function gotoPage(page) {
+            currentPage = page;
+            searchBooks();
+        }
+        function displayBookDetails(bookId) {
+            $.ajax({
+                url: `https://www.googleapis.com/books/v1/volumes/${bookId}?key=${apiKey}`,
+                type: 'GET',
+                success: function (data) {
+                    $('#book-details').show().html(`<h2>${data.volumeInfo.title}</h2>
+                                                    <p>${data.volumeInfo.description}</p>
+                                                    <img src="${data.volumeInfo.imageLinks?.thumbnail}" alt="${data.volumeInfo.title}">
+                                                    <p>Author: ${data.volumeInfo.authors?.join(', ')}</p>
+                                                    <p>Published Date: ${data.volumeInfo.publishedDate}</p>`);
+                }
+            });
+        }
+        function fetchTopBooks() {
+            $.ajax({
+                url: `https://www.googleapis.com/books/v1/volumes?q=subject:top&maxResults=10&orderBy=relevance&key=${apiKey}`,
+                type: 'GET',
+                success: function (data) {
+                    displayTopBooks(data);
+                }
+            });
+        }
+        function displayTopBooks(data) {
+            $('#top-books-table tbody').empty();
+            data.items.forEach(item => {
+                const topBookItem = `<tr class="top-book-item" data-id="${item.id}">
+                                        <td><img src="${item.volumeInfo.imageLinks?.thumbnail}" alt="${item.volumeInfo.title}" width="128" height="195"></td>
+                                        <td>${item.volumeInfo.title}</td>
+                                    </tr>`;
+                $('#top-books-table tbody').append(topBookItem);
+            });
+            $('.top-book-item').click(function () {
+                const bookId = $(this).data('id');
+                displayBookDetails(bookId);
+            });
+        }
     </script>
-
-    <script id="book-details-template" type="x-tmpl-mustache">
-        <h2>{{title}}</h2>
-        <p>{{description}}</p>
-        <img src="{{thumbnail}}" alt="{{title}}">
-        <p>Author: {{authors}}</p>
-        <p>Published Date: {{publishedDate}}</p>
-    </script>
-
-    <script id="bookshelf-template" type="x-tmpl-mustache">
-        {{#books}}
-        <div class="bookshelf-item" data-id="{{id}}">
-            <img src="{{thumbnail}}" alt="{{title}}" width="128" height="195">
-            <p>{{title}}</p>
-        </div>
-        {{/books}}
-    </script>
-
-    <script src="dist/bundle.js"></script>
 </body>
 </html>
+
