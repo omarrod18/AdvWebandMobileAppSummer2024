@@ -4,7 +4,9 @@
     <meta charset="utf-8">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <title>IT 4403 Individual Project: Milestone #3</title>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/mustache.js/0.8.1/mustache.min.js"></script>
+    <script src="scripts.js"></script>
+    <title>IT 4403 Individual Project: Milestone #4</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -44,7 +46,7 @@
             display: flex;
             flex-direction: column;
         }
-        .floating-box a {
+        .floating-box a, .styled-button {
             margin: 5px;
             padding: 10px;
             background-color: #007bff;
@@ -54,7 +56,7 @@
             text-decoration: none;
             transition: background-color 0.3s;
         }
-        .floating-box a:hover {
+        .floating-box a:hover, .styled-button:hover {
             background-color: #0056b3;
         }
         .pagination {
@@ -76,6 +78,57 @@
         #top-books {
             margin-top: 20px;
         }
+        .book-item.grid {
+            width: 30%;
+            text-align: center;
+        }
+        .book-item.list {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #results.grid-view {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+        #results.list-view {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -83,7 +136,7 @@
         <h1>IT 4403 Individual Project</h1>
         <h2>Omar Rodriguez <br/>
             College of Computing and Software Engineering <br/>
-            This updated page now displays a search bar for the user to look up books and pages results. This is Project Milestone 3.
+            This updated page improves the SPA user interface and interaction. This is Project Milestone 4.
         </h2>
         <h3>IT 4403: Advanced Web and Mobile App <br/>
             <a href="https://www.kennesaw.edu/ccse/academics/information-technology/">Department of Information Technology</a>
@@ -96,22 +149,16 @@
         </h3>
         <div>
             <input type="text" id="search-term" placeholder="Search for books...">
-            <button id="search-button">Search</button>
+            <button id="search-button" class="styled-button">Search</button>
         </div>
-        <table id="table" class="table table-bordered table-hover">
-            <thead>
-                <tr>
-                    <th>Book Cover</th>
-                    <th>Book Title</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <div id="view-switch">
+            <button id="grid-view-button" class="styled-button">Grid View</button>
+            <button id="list-view-button" class="styled-button">List View</button>
+        </div>
+        <div id="results" class="grid-view"></div>
         <div class="pagination"></div>
-        <div id="book-details" style="display:none;"></div>
-
         <div id="top-books">
-            <h2>Top 10 Books</h2>
+            <h2>Most Popular Books on Google Books Today!</h2>
             <table id="top-books-table" class="table table-bordered table-hover">
                 <thead>
                     <tr>
@@ -127,18 +174,61 @@
         <a href="book.html">Book Details</a>
         <a href="bookshelf.html">My Bookshelf</a>
     </div>
+    <div id="bookDetailsModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="book-details"></div>
+        </div>
+    </div>
     <script>
         const apiKey = 'AIzaSyA8NwX-B4DcmwSQueTy_lp92EV5QBNBLR4';
         let currentPage = 1;
         let totalPages = 0;
         let searchTerm = '';
+        let currentView = 'grid';
+        const searchTemplate = `
+            {{#books}}
+            <div class="book-item {{viewClass}}" data-id="{{id}}">
+                <img src="{{image}}" alt="{{title}}">
+                <h3>{{title}}</h3>
+                <p>{{author}}</p>
+            </div>
+            {{/books}}
+        `;
+        const bookDetailsTemplate = `
+            <h2>{{title}}</h2>
+            <img src="{{image}}" alt="{{title}}">
+            <p><strong>Author:</strong> {{author}}</p>
+            <p><strong>Published Date:</strong> {{publishedDate}}</p>
+            <p><strong>Publisher:</strong> {{publisher}}</p>
+            <p><strong>Description:</strong> {{description}}</p>
+        `;
         $(document).ready(function () {
             $('#search-button').click(function () {
                 searchTerm = $('#search-term').val();
                 currentPage = 1;
                 searchBooks();
             });
-            fetchTopBooks();
+            $('#grid-view-button').click(function () {
+                currentView = 'grid';
+                $('#results').removeClass('list-view').addClass('grid-view');
+                searchBooks();
+            });
+            $('#list-view-button').click(function () {
+                currentView = 'list';
+                $('#results').removeClass('grid-view').addClass('list-view');
+                searchBooks();
+            });
+            fetchPopularBooks();
+            $('.close').click(function() {
+                $('#bookDetailsModal').hide();
+            });
+
+            $(window).click(function(event) {
+                if (event.target == document.getElementById('bookDetailsModal')) {
+                    $('#bookDetailsModal').hide();
+                }
+            });
         });
         function searchBooks() {
             $.ajax({
@@ -150,15 +240,17 @@
             });
         }
         function displayResults(data) {
-            $('#table tbody').empty();
-            data.items.forEach(item => {
-                const bookItem = `<tr class="book-item" data-id="${item.id}">
-                                    <td><img src="${item.volumeInfo.imageLinks?.thumbnail}" alt="${item.volumeInfo.title}" width="128" height="195"></td>
-                                    <td>${item.volumeInfo.title}</td>
-                                  </tr>`;
-                $('#table tbody').append(bookItem);
-            });
-            totalPages = Math.ceil(data.totalItems / 10);
+            $('#results').empty();
+            const books = data.items.map(item => ({
+                id: item.id,
+                title: item.volumeInfo.title,
+                author: item.volumeInfo.authors ? item.volumeInfo.authors.join(', ') : 'Unknown',
+                image: item.volumeInfo.imageLinks ? item.volumeInfo.imageLinks.thumbnail : 'no-image.png',
+                viewClass: currentView
+            }));
+            const rendered = Mustache.render(searchTemplate, { books });
+            $('#results').html(rendered);
+            totalPages = Math.min(10, Math.ceil(data.totalItems / 10));
             updatePagination();
             $('.book-item').click(function () {
                 const bookId = $(this).data('id');
@@ -181,28 +273,34 @@
                 url: `https://www.googleapis.com/books/v1/volumes/${bookId}?key=${apiKey}`,
                 type: 'GET',
                 success: function (data) {
-                    $('#book-details').show().html(`<h2>${data.volumeInfo.title}</h2>
-                                                    <p>${data.volumeInfo.description}</p>
-                                                    <img src="${data.volumeInfo.imageLinks?.thumbnail}" alt="${data.volumeInfo.title}">
-                                                    <p>Author: ${data.volumeInfo.authors?.join(', ')}</p>
-                                                    <p>Published Date: ${data.volumeInfo.publishedDate}</p>`);
+                    const bookDetails = {
+                        title: data.volumeInfo.title,
+                        author: data.volumeInfo.authors ? data.volumeInfo.authors.join(', ') : 'Unknown',
+                        publishedDate: data.volumeInfo.publishedDate,
+                        publisher: data.volumeInfo.publisher,
+                        description: data.volumeInfo.description,
+                        image: data.volumeInfo.imageLinks ? data.volumeInfo.imageLinks.thumbnail : 'no-image.png'
+                    };
+                    const rendered = Mustache.render(bookDetailsTemplate, bookDetails);
+                    $('#book-details').html(rendered);
+                    $('#bookDetailsModal').show();
                 }
             });
         }
-        function fetchTopBooks() {
+        function fetchPopularBooks() {
             $.ajax({
-                url: `https://www.googleapis.com/books/v1/volumes?q=subject:top&maxResults=10&orderBy=relevance&key=${apiKey}`,
+                url: `https://www.googleapis.com/books/v1/volumes?q=best&orderBy=relevance&key=${apiKey}`,
                 type: 'GET',
                 success: function (data) {
-                    displayTopBooks(data);
+                    displayPopularBooks(data);
                 }
             });
         }
-        function displayTopBooks(data) {
+        function displayPopularBooks(data) {
             $('#top-books-table tbody').empty();
             data.items.forEach(item => {
                 const topBookItem = `<tr class="top-book-item" data-id="${item.id}">
-                                        <td><img src="${item.volumeInfo.imageLinks?.thumbnail}" alt="${item.volumeInfo.title}" width="128" height="195"></td>
+                                        <td><img src="${item.volumeInfo.imageLinks ? item.volumeInfo.imageLinks.thumbnail : 'no-image.png'}" alt="${item.volumeInfo.title}" width="128" height="195"></td>
                                         <td>${item.volumeInfo.title}</td>
                                     </tr>`;
                 $('#top-books-table tbody').append(topBookItem);
@@ -215,4 +313,15 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
 

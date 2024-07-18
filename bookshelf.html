@@ -4,7 +4,8 @@
     <meta charset="utf-8">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <title>My Bookshelf - IT 4403 Individual Project Milestone 2</title>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/mustache.js/0.8.1/mustache.min.js"></script>
+    <title>My Bookshelf - IT 4403 Individual Project Milestone 4</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -13,11 +14,11 @@
             margin: 0;
             padding: 0;
         }
-        .container {
-            padding: 20px;
-        }
-        h1 {
+        h1, h2, h3 {
             color: #007bff;
+        }
+        center {
+            padding: 20px;
         }
         a {
             color: #007bff;
@@ -26,17 +27,16 @@
         a:hover {
             color: #0056b3;
         }
-        .book-item {
+        table {
             background-color: #ffffff;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
         }
-        .book-item img {
-            max-width: 150px;
-            margin-bottom: 10px;
+        table thead th {
+            background-color: #007bff;
+            color: white;
+        }
+        td img {
+            display: block;
+            margin: auto;
         }
         .floating-box {
             position: fixed;
@@ -45,7 +45,7 @@
             display: flex;
             flex-direction: column;
         }
-        .floating-box a {
+        .floating-box a, .styled-button {
             margin: 5px;
             padding: 10px;
             background-color: #007bff;
@@ -55,24 +55,295 @@
             text-decoration: none;
             transition: background-color 0.3s;
         }
-        .floating-box a:hover {
+        .floating-box a:hover, .styled-button:hover {
             background-color: #0056b3;
+        }
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .pagination button {
+            margin: 0 5px;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .pagination button.active {
+            background-color: #0056b3;
+        }
+        #top-books {
+            margin-top: 20px;
+        }
+        .book-item.grid {
+            width: 30%;
+            text-align: center;
+        }
+        .book-item.list {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #results.grid-view {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+        #results.list-view {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .tabs button {
+            margin: 0 5px;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .tabs button.active {
+            background-color: #0056b3;
+        }
+        #search-container, #bookshelf-container {
+            display: none;
+        }
+        #search-container.active, #bookshelf-container.active {
+            display: block;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>My Bookshelf</h1>
-        <div id="bookshelf" class="row"></div>
-    </div>
+    <center>
+        <h1>IT 4403 Individual Project</h1>
+        <h2>Omar Rodriguez <br/>
+            College of Computing and Software Engineering <br/>
+            This updated page improves the SPA user interface and interaction. This is Project Milestone 4.
+        </h2>
+        <h3>IT 4403: Advanced Web and Mobile App <br/>
+            <a href="https://www.kennesaw.edu/ccse/academics/information-technology/">Department of Information Technology</a>
+        </h3>
+        <h3>Project Information: <br/>
+            Milestone 1: JSON<br/>
+            Milestone 2: Google Books API <br/>
+            Milestone 3: Book Search AJAX <br/>
+            Milestone 4: Improved SPA UI
+        </h3>
+        <div class="tabs">
+            <button id="search-tab" class="active">Search Results</button>
+            <button id="bookshelf-tab">My Bookshelf</button>
+        </div>
+        <div id="search-container" class="active">
+            <div>
+                <input type="text" id="search-term" placeholder="Search for books...">
+                <button id="search-button" class="styled-button">Search</button>
+            </div>
+            <div id="view-switch">
+                <button id="grid-view-button" class="styled-button">Grid View</button>
+                <button id="list-view-button" class="styled-button">List View</button>
+            </div>
+            <div id="results" class="grid-view"></div>
+            <div class="pagination"></div>
+        </div>
+        <div id="bookshelf-container">
+            <div id="bookshelf" class="row"></div>
+        </div>
+    </center>
     <div class="floating-box">
         <a href="index.html">Home</a>
         <a href="book.html">Book Details</a>
     </div>
+    <div id="bookDetailsModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="book-details"></div>
+        </div>
+    </div>
     <script>
+        const apiKey = 'AIzaSyA8NwX-B4DcmwSQueTy_lp92EV5QBNBLR4';
+        let currentPage = 1;
+        let totalPages = 0;
+        let searchTerm = '';
+        let currentView = 'grid';
+        const searchTemplate = `
+            {{#books}}
+            <div class="book-item {{viewClass}}" data-id="{{id}}">
+                <img src="{{image}}" alt="{{title}}">
+                <h3>{{title}}</h3>
+                <p>{{author}}</p>
+            </div>
+            {{/books}}
+        `;
+        const bookDetailsTemplate = `
+            <h2>{{title}}</h2>
+            <img src="{{image}}" alt="{{title}}">
+            <p><strong>Author:</strong> {{author}}</p>
+            <p><strong>Published Date:</strong> {{publishedDate}}</p>
+            <p><strong>Publisher:</strong> {{publisher}}</p>
+            <p><strong>Description:</strong> {{description}}</p>
+        `;
         $(document).ready(function () {
-            var url = 'https://www.googleapis.com/books/v1/users/109624874409377096237/bookshelves/1001/volumes';
+            $('#search-button').click(function () {
+                searchTerm = $('#search-term').val();
+                currentPage = 1;
+                searchBooks();
+            });
+            $('#grid-view-button').click(function () {
+                currentView = 'grid';
+                $('#results').removeClass('list-view').addClass('grid-view');
+                searchBooks();
+            });
+            $('#list-view-button').click(function () {
+                currentView = 'list';
+                $('#results').removeClass('grid-view').addClass('list-view');
+                searchBooks();
+            });
+            $('#search-tab').click(function() {
+                $('#search-tab').addClass('active');
+                $('#bookshelf-tab').removeClass('active');
+                $('#search-container').addClass('active');
+                $('#bookshelf-container').removeClass('active');
+            });
+            $('#bookshelf-tab').click(function() {
+                $('#bookshelf-tab').addClass('active');
+                $('#search-tab').removeClass('active');
+                $('#bookshelf-container').addClass('active');
+                $('#search-container').removeClass('active');
+                loadBookshelf();
+            });
+            fetchPopularBooks();
+            $('.close').click(function() {
+                $('#bookDetailsModal').hide();
+            });
 
+            $(window).click(function(event) {
+                if (event.target == document.getElementById('bookDetailsModal')) {
+                    $('#bookDetailsModal').hide();
+                }
+            });
+        });
+        function searchBooks() {
+            $.ajax({
+                url: `https://www.googleapis.com/books/v1/volumes?q=${searchTerm}&startIndex=${(currentPage - 1) * 10}&maxResults=10&key=${apiKey}`,
+                type: 'GET',
+                success: function (data) {
+                    displayResults(data);
+                }
+            });
+        }
+        function displayResults(data) {
+            $('#results').empty();
+            const books = data.items.map(item => ({
+                id: item.id,
+                title: item.volumeInfo.title,
+                author: item.volumeInfo.authors ? item.volumeInfo.authors.join(', ') : 'Unknown',
+                image: item.volumeInfo.imageLinks ? item.volumeInfo.imageLinks.thumbnail : 'no-image.png',
+                viewClass: currentView
+            }));
+            const rendered = Mustache.render(searchTemplate, { books });
+            $('#results').html(rendered);
+            totalPages = Math.min(10, Math.ceil(data.totalItems / 10));
+            updatePagination();
+            $('.book-item').click(function () {
+                const bookId = $(this).data('id');
+                displayBookDetails(bookId);
+            });
+        }
+        function updatePagination() {
+            $('.pagination').empty();
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = `<button class="${i === currentPage ? 'active' : ''}" onclick="gotoPage(${i})">${i}</button>`;
+                $('.pagination').append(pageButton);
+            }
+        }
+        function gotoPage(page) {
+            currentPage = page;
+            searchBooks();
+        }
+        function displayBookDetails(bookId) {
+            $.ajax({
+                url: `https://www.googleapis.com/books/v1/volumes/${bookId}?key=${apiKey}`,
+                type: 'GET',
+                success: function (data) {
+                    const bookDetails = {
+                        title: data.volumeInfo.title,
+                        author: data.volumeInfo.authors ? data.volumeInfo.authors.join(', ') : 'Unknown',
+                        publishedDate: data.volumeInfo.publishedDate,
+                        publisher: data.volumeInfo.publisher,
+                        description: data.volumeInfo.description,
+                        image: data.volumeInfo.imageLinks ? data.volumeInfo.imageLinks.thumbnail : 'no-image.png'
+                    };
+                    const rendered = Mustache.render(bookDetailsTemplate, bookDetails);
+                    $('#book-details').html(rendered);
+                    $('#bookDetailsModal').show();
+                }
+            });
+        }
+        function fetchPopularBooks() {
+            $.ajax({
+                url: `https://www.googleapis.com/books/v1/volumes?q=best&orderBy=relevance&key=${apiKey}`,
+                type: 'GET',
+                success: function (data) {
+                    displayPopularBooks(data);
+                }
+            });
+        }
+        function displayPopularBooks(data) {
+            $('#top-books-table tbody').empty();
+            data.items.forEach(item => {
+                const topBookItem = `<tr class="top-book-item" data-id="${item.id}">
+                                        <td><img src="${item.volumeInfo.imageLinks ? item.volumeInfo.imageLinks.thumbnail : 'no-image.png'}" alt="${item.volumeInfo.title}" width="128" height="195"></td>
+                                        <td>${item.volumeInfo.title}</td>
+                                    </tr>`;
+                $('#top-books-table tbody').append(topBookItem);
+            });
+            $('.top-book-item').click(function () {
+                const bookId = $(this).data('id');
+                displayBookDetails(bookId);
+            });
+        }
+        function loadBookshelf() {
+            var url = 'https://www.googleapis.com/books/v1/users/109624874409377096237/bookshelves/1001/volumes';
             $.getJSON(url, function (data) {
                 var output = '';
                 $.each(data.items, function (index, book) {
@@ -89,7 +360,7 @@
             }).fail(function () {
                 $('#bookshelf').html('<p>An error occurred while fetching the data.</p>');
             });
-        });
+        }
     </script>
 </body>
 </html>
